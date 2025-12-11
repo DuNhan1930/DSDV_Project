@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <title>BMW Sales Dashboard (2010–2024)</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <script src="https://d3js.org/d3.v7.min.js"></script>
+  <link rel="stylesheet" href="assets/css/style.css" />
+</head>
+<body>
+  <header>
+    <div>
+      <h1 style="margin:0;font-size:20px;">BMW Sales Dashboard</h1>
+      <div class="subtitle">
+        Data: 2010–2024
+      </div>
+    </div>
+    <nav>
+      <a href="#" id="reload">Reload data</a>
+    </nav>
+  </header>
+
+  <div class="container">
+    <div class="grid">
+      <div class="card">
+        <h2>Average Price by Year</h2>
+        <div class="subtitle">Bar chart of mean Price_USD across years</div>
+        <div id="bar-chart" class="chart"></div>
+      </div>
+      <div class="card">
+        <h2>Total Sales Count by Year</h2>
+        <div class="subtitle">Line chart of record counts per year</div>
+        <div id="line-chart" class="chart"></div>
+      </div>
+    </div>
+
+    <div class="card" style="margin-top:24px;">
+      <h2>Sales Volume Trend by Model</h2>
+      <div class="subtitle">Select a model to view its sales trend</div>
+      <select id="model-select" style="margin-bottom:12px;"></select>
+      <div id="model-chart" class="chart"></div>
+    </div>
+
+    <div class="card" style="margin-top:24px;">
+      <h2>BMW Sales Heatmap</h2>
+      <div class="subtitle">Darkest = Best Seller of the Year</div>
+      <div id="heatmap" class="chart"></div>
+    </div>
+  </div>
+
+  <footer>
+    Built with D3.js. Run <code>python -m http.server</code> and open 
+    <code>http://localhost:8000/web/</code>.
+  </footer>
+
+  <!-- Load chart scripts -->
+  <script src="assets/js/barChart.js"></script>
+  <script src="assets/js/lineChart.js"></script>
+  <script src="assets/js/modelChart.js"></script>
+  <script src="assets/js/heatmap.js"></script>
+  <script>
+    const CSV_PATH_MAIN = "../data/encoded/Encoded_For_Visualize_BMW_Sales_2010-2024.csv";
+    const CSV_PATH_MODEL = "../data/line_graph/Model_Trend_BMW_Sales_2010-2024.csv";
+
+    const tooltip = d3.select("body").append("div")
+      .attr("class", "tooltip")
+      .style("opacity", 0);
+
+    async function loadAndRender() {
+      const [rawMain, rawModel] = await Promise.all([
+        d3.csv(CSV_PATH_MAIN),
+        d3.csv(CSV_PATH_MODEL)
+      ]);
+
+      const mainData = rawMain.map(d => ({
+        Year: +d.Year,
+        Price_USD: d.Price_USD ? +d.Price_USD : NaN,
+        Model: d.Model,
+        Region: d.Region
+      })).filter(d => !Number.isNaN(d.Year));
+
+      const modelData = rawModel.map(d => ({
+        Year: +d.Year,
+        Model: d.Model,
+        Sales_Volume: d.Sales_Volume ? +d.Sales_Volume : NaN
+      })).filter(d => !Number.isNaN(d.Year) && d.Model);
+
+      renderBarChart(mainData, tooltip);
+      renderLineChart(mainData, tooltip);
+      renderModelChart(modelData, tooltip);
+      renderHeatmap(modelData); // NEW
+    }
+
+    document.getElementById("reload").addEventListener("click", e => {
+      e.preventDefault();
+      loadAndRender();
+    });
+
+    loadAndRender();
+  </script>
+</body>
+</html>
