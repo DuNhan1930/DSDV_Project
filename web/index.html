@@ -1,102 +1,63 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="utf-8" />
-  <title>BMW Sales Dashboard (2010–2024)</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <script src="https://d3js.org/d3.v7.min.js"></script>
-  <link rel="stylesheet" href="assets/css/style.css" />
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>World Trends Dashboard</title>
+    <link rel="stylesheet" href="style.css">
+    <script src="https://d3js.org/d3.v7.min.js"></script>
+    <script src="https://d3js.org/d3-scale-chromatic.v1.min.js"></script>
 </head>
 <body>
-  <header>
-    <div>
-      <h1 style="margin:0;font-size:20px;">BMW Sales Dashboard</h1>
-      <div class="subtitle">
-        Data: 2010–2024
-      </div>
+
+    <div id="container">
+        <h1>World Trends Dashboard</h1>
+        
+        <div class="controls">
+            <div class="control-group">
+                <label for="attributeSelect">Metric:</label>
+                <select id="attributeSelect">
+                    <option value="Life Ladder" selected>Happiness (Life Ladder)</option>
+                    <option value="Log GDP per capita">Log GDP per Capita</option>
+                    <option value="Social support">Social Support</option>
+                    <option value="Healthy life expectancy at birth">Healthy Life Expectancy</option>
+                    <option value="Freedom to make life choices">Freedom to Make Choices</option>
+                    <option value="Generosity">Generosity</option>
+                    <option value="Perceptions of corruption">Perceptions of Corruption</option>
+                </select>
+            </div>
+
+            <div class="control-group">
+                <label for="yearSlider">Year: <span id="yearLabel">2010</span></label>
+                <input type="range" id="yearSlider" min="2010" max="2023" value="2010" step="1">
+            </div>
+        </div>
+
+        <div id="tooltip" class="tooltip" style="opacity:0;"></div>
+
+        <div id="charts">
+            <div class="chart-wrapper">
+                <h3>Geographic View</h3>
+                <svg id="my_dataviz" width="700" height="425"></svg>
+            </div>
+
+            <div class="chart-wrapper">
+                <h3>Regional Distribution / Trends</h3>
+                <div id="barLegend">
+                    <span style="color:#d73027;">■ Low</span>
+                    <span style="color:#fee090;">■ Medium</span>
+                    <span style="color:#4575b4;">■ High</span>
+                </div>
+                <svg id="my_barchart" width="700" height="400"></svg>
+            </div>
+        </div>
+
+        <div id="line-chart-container" class="chart-wrapper" style="margin-top: 30px; width: 100%;">
+            <h3>Regional Trends over Time (Average)</h3>
+            <svg id="my_linechart" width="1000" height="300"></svg>
+        </div>
     </div>
-    <nav>
-      <a href="#" id="reload">Reload data</a>
-    </nav>
-  </header>
 
-  <div class="container">
-    <div class="grid">
-      <div class="card">
-        <h2>Average Price by Year</h2>
-        <div class="subtitle">Bar chart of mean Price_USD across years</div>
-        <div id="bar-chart" class="chart"></div>
-      </div>
-      <div class="card">
-        <h2>Total Sales Count by Year</h2>
-        <div class="subtitle">Line chart of record counts per year</div>
-        <div id="line-chart" class="chart"></div>
-      </div>
-    </div>
-
-    <div class="card" style="margin-top:24px;">
-      <h2>Sales Volume Trend by Model</h2>
-      <div class="subtitle">Select a model to view its sales trend</div>
-      <select id="model-select" style="margin-bottom:12px;"></select>
-      <div id="model-chart" class="chart"></div>
-    </div>
-
-    <div class="card" style="margin-top:24px;">
-      <h2>BMW Sales Heatmap</h2>
-      <div class="subtitle">Darkest = Best Seller of the Year</div>
-      <div id="heatmap" class="chart"></div>
-    </div>
-  </div>
-
-  <footer>
-    Built with D3.js. Run <code>python -m http.server</code> and open 
-    <code>http://localhost:8000/web/</code>.
-  </footer>
-
-  <!-- Load chart scripts -->
-  <script src="assets/js/barChart.js"></script>
-  <script src="assets/js/lineChart.js"></script>
-  <script src="assets/js/modelChart.js"></script>
-  <script src="assets/js/heatmap.js"></script>
-  <script>
-    const CSV_PATH_MAIN = "../data/encoded/Encoded_For_Visualize_BMW_Sales_2010-2024.csv";
-    const CSV_PATH_MODEL = "../data/line_graph/Model_Trend_BMW_Sales_2010-2024.csv";
-
-    const tooltip = d3.select("body").append("div")
-      .attr("class", "tooltip")
-      .style("opacity", 0);
-
-    async function loadAndRender() {
-      const [rawMain, rawModel] = await Promise.all([
-        d3.csv(CSV_PATH_MAIN),
-        d3.csv(CSV_PATH_MODEL)
-      ]);
-
-      const mainData = rawMain.map(d => ({
-        Year: +d.Year,
-        Price_USD: d.Price_USD ? +d.Price_USD : NaN,
-        Model: d.Model,
-        Region: d.Region
-      })).filter(d => !Number.isNaN(d.Year));
-
-      const modelData = rawModel.map(d => ({
-        Year: +d.Year,
-        Model: d.Model,
-        Sales_Volume: d.Sales_Volume ? +d.Sales_Volume : NaN
-      })).filter(d => !Number.isNaN(d.Year) && d.Model);
-
-      renderBarChart(mainData, tooltip);
-      renderLineChart(mainData, tooltip);
-      renderModelChart(modelData, tooltip);
-      renderHeatmap(modelData); // NEW
-    }
-
-    document.getElementById("reload").addEventListener("click", e => {
-      e.preventDefault();
-      loadAndRender();
-    });
-
-    loadAndRender();
-  </script>
+    <script src="script.js"></script>
 </body>
 </html>
