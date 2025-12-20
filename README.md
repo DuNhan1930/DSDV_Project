@@ -1,6 +1,7 @@
 # World Trends Dashboard (2010–2023)
 
-<img width="2483" height="1741" alt="image" src="https://github.com/user-attachments/assets/90b907f6-81c3-4501-a8a8-f81d48a4460c" />
+<img width="2026" height="1451" alt="image" src="https://github.com/user-attachments/assets/1c54c1af-3dfc-4b77-9598-7d54977ec2bc" />
+
 
 ## 📖 Overview
 
