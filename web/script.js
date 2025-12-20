@@ -46,7 +46,7 @@ const mapLegendAxisG = mapLegendG.append("g")
 
 // 2. BAR CHART AREA
 const barSvg = d3.select("#my_barchart"),
-      barMargin = {top: 50, right: 120, bottom: 50, left: 50}, 
+      barMargin = {top: 50, right: 150, bottom: 50, left: 50}, 
       barWidth = +barSvg.attr("width") - barMargin.left - barMargin.right,
       barHeight = +barSvg.attr("height") - barMargin.top - barMargin.bottom;
 
@@ -271,7 +271,6 @@ function updateMapLegend(domain) {
     mapLegendAxisG.transition().duration(750).call(legendAxis);
 
     // Update Label text if needed
-    // (Optional: Add a label above the legend)
     mapLegendG.selectAll(".legend-label").remove();
     mapLegendG.append("text")
         .attr("class", "legend-label")
@@ -280,6 +279,53 @@ function updateMapLegend(domain) {
         .style("font-size", "11px")
         .style("fill", "#666")
         .text(currentAttribute);
+}
+
+// --- HELPER: ADD COLORED BACKGROUND BANDS ---
+function addLifeLadderBands(selection, y, width) {
+    if (currentAttribute !== "Life Ladder") return;
+
+    const bounds = y.domain(); // [min, max]
+    const yMin = bounds[0];
+    const yMax = bounds[1];
+
+    // High Band (> 6.5) - Blue
+    if (yMax > 6.5) {
+        selection.append("rect")
+            .attr("x", 0)
+            .attr("width", width)
+            .attr("y", y(yMax))
+            .attr("height", Math.max(0, y(6.5) - y(yMax)))
+            .attr("fill", categoryColorScale("High"))
+            .attr("opacity", 0.1)
+            .style("pointer-events", "none"); // Make non-interactive
+    }
+
+    // Medium Band (5.0 to 6.5) - Orange
+    const medTop = Math.min(yMax, 6.5);
+    const medBottom = Math.max(yMin, 5.0);
+    if (medTop > medBottom) {
+         selection.append("rect")
+            .attr("x", 0)
+            .attr("width", width)
+            .attr("y", y(medTop))
+            .attr("height", y(medBottom) - y(medTop))
+            .attr("fill", categoryColorScale("Medium"))
+            .attr("opacity", 0.1)
+            .style("pointer-events", "none"); // Make non-interactive
+    }
+
+    // Low Band (< 5.0) - Red
+    if (yMin < 5.0) {
+        selection.append("rect")
+            .attr("x", 0)
+            .attr("width", width)
+            .attr("y", y(Math.min(yMax, 5.0)))
+            .attr("height", y(yMin) - y(Math.min(yMax, 5.0)))
+            .attr("fill", categoryColorScale("Low"))
+            .attr("opacity", 0.1)
+            .style("pointer-events", "none"); // Make non-interactive
+    }
 }
 
 // --- BAR CHART VIEWS ---
@@ -311,7 +357,7 @@ function drawRegionalStacks(data) {
 
     barG.append("g").attr("transform", `translate(0,${barHeight})`)
         .call(d3.axisBottom(x)).selectAll("text")
-        .attr("transform", "translate(-10,0)rotate(-45)").style("text-anchor", "end");
+        .attr("transform", "translate(+10,0)rotate(-35)").style("text-anchor", "end");
     barG.append("g").call(d3.axisLeft(y));
 
     barG.selectAll(".layer").data(stackedData).join("g").attr("fill", d => categoryColorScale(d.key))
@@ -399,10 +445,17 @@ function drawCountryTrendChart() {
     barG.append("text").attr("x", barWidth/2).attr("y", -25).attr("text-anchor", "middle")
         .style("font-size", "20px").style("font-weight", "bold")
         .text(`Comparison: ${selectedCountries.length} Selected`);
+    
+    barG.append("text").attr("x", barWidth/2).attr("y", -8).attr("text-anchor", "middle")
+        .style("font-size", "14px").attr("fill", "#666")
+        .text(`Metric: ${currentAttribute} (2010 - ${currentYear})`);
 
     const x = d3.scaleLinear().domain([2010, 2023]).range([0, barWidth]);
     const domainConfig = metrics[currentAttribute].domain;
     const y = d3.scaleLinear().domain([Math.min(...domainConfig), Math.max(...domainConfig)]).range([barHeight, 0]);
+
+    // ** NEW: Add Background Bands **
+    addLifeLadderBands(barG, y, barWidth);
 
     barG.append("g").attr("transform", `translate(0,${barHeight})`)
         .call(d3.axisBottom(x).tickFormat(d3.format("d")));
@@ -447,7 +500,6 @@ function drawCountryTrendChart() {
         drawLineAndDots(cData, countryColorScale(index), "0", country, true);
     });
 
-    // LEGEND
     const legend = barG.append("g").attr("transform", `translate(${barWidth + 15}, 0)`);
     let items = [{c: "#999", t: "World"}, {c: "#E69F00", t: regionName}];
     selectedCountries.forEach((c, i) => items.push({c: countryColorScale(i), t: c}));
@@ -469,6 +521,10 @@ function updateLineChartVisuals() {
     const y = d3.scaleLinear().domain([Math.min(...domainConfig), Math.max(...domainConfig)]).range([lineHeight, 0]);
 
     lineG.selectAll("*").remove(); 
+
+    // ** NEW: Add Background Bands **
+    addLifeLadderBands(lineG, y, lineWidth);
+
     lineG.append("g").attr("transform", `translate(0,${lineHeight})`).call(d3.axisBottom(x).tickFormat(d3.format("d")));
     lineG.append("g").call(d3.axisLeft(y));
 
