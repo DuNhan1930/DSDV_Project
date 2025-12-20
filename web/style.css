@@ -5,14 +5,14 @@ body {
     justify-content: center;
     min-height: 100vh;
     margin: 0;
-    padding-bottom: 50px; /* Space for scrolling */
+    padding-bottom: 50px;
 }
 
 #container {
     background-color: white;
     padding: 20px;
     border-radius: 8px;
-    box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+    box-shadow: 0 4px 15px rgba(0,0,0,0.1); /* Softer, deeper shadow */
     text-align: center;
     max-width: 1500px;
     width: 95%;
@@ -22,6 +22,7 @@ body {
 h1 { margin-bottom: 20px; color: #333; }
 h3 { margin: 10px 0; color: #555; font-size: 20px; }
 
+/* Controls */
 .controls {
     margin-bottom: 20px;
     display: flex;
@@ -31,6 +32,7 @@ h3 { margin: 10px 0; color: #555; font-size: 20px; }
     background: #f9f9f9;
     padding: 15px;
     border-radius: 6px;
+    border: 1px solid #eee;
 }
 
 .control-group {
@@ -40,7 +42,7 @@ h3 { margin: 10px 0; color: #555; font-size: 20px; }
     gap: 5px;
 }
 
-select { padding: 5px; border-radius: 4px; border: 1px solid #ccc; }
+select { padding: 8px; border-radius: 4px; border: 1px solid #ccc; font-size: 14px; }
 input[type=range] { width: 200px; cursor: pointer; }
 
 #charts {
@@ -54,47 +56,82 @@ input[type=range] { width: 200px; cursor: pointer; }
     display: flex;
     flex-direction: column;
     align-items: center;
+    position: relative; /* For tooltip positioning context if needed */
 }
 
-/* SVG General */
-svg { border: 1px solid #eee; }
-#my_dataviz { background-color: #c4e0e5; }
+/* SVG Styling */
+svg { 
+    border: 1px solid #eee; 
+    border-radius: 4px; /* Slight rounding for polish */
+}
+#my_dataviz { background-color: #f0f8ff; } /* AliceBlue (softer ocean) */
 #my_barchart, #my_linechart { background-color: #fff; }
 
-/* Map */
-.country { stroke: #fff; stroke-width: 0.5px; transition: fill 0.5s ease; }
-.country:hover { stroke: #333; stroke-width: 1.5px; }
+/* --- POP OUT EFFECTS --- */
+
+/* Map Countries */
+.country { 
+    stroke: #fff; 
+    stroke-width: 0.5px; 
+    transition: fill 0.5s ease; /* Smooth color change */
+    /* Hardware acceleration for smoother interaction */
+    will-change: transform, stroke-width; 
+}
+
+/* Hover State for Country */
+.country.active, .country:hover {
+    stroke: #333;
+    stroke-width: 1.5px;
+    filter: drop-shadow(0px 0px 8px rgba(0,0,0,0.3)); /* THE POP OUT GLOW */
+    cursor: pointer;
+}
+
+/* Bars */
+rect {
+    transition: opacity 0.3s ease;
+    shape-rendering: crispEdges;
+}
+
+/* Bar Hover Pop Out */
+rect:hover {
+    opacity: 1;
+    stroke: #333;
+    stroke-width: 2px;
+    filter: drop-shadow(2px 4px 6px rgba(0,0,0,0.3)); /* 3D lift effect */
+}
+
+/* Lines */
+.line {
+    fill: none;
+    stroke-linecap: round; /* Smoother line ends */
+    stroke-linejoin: round; /* Smoother line corners */
+    transition: opacity 0.3s;
+}
+
+/* Dots */
+circle {
+    transition: r 0.3s ease-out, stroke-width 0.3s ease-out;
+}
 
 /* Tooltip */
 .tooltip {
     position: absolute;
     text-align: center;
-    padding: 8px;
+    padding: 10px 14px;
     font-size: 14px;
-    background: #333;
+    background: rgba(50, 50, 50, 0.9); /* Semi-transparent dark */
     color: #fff;
-    border-radius: 4px;
+    border-radius: 6px;
     pointer-events: none;
-    z-index: 10;
+    z-index: 100;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+    backdrop-filter: blur(2px); /* Modern blur effect */
+    transition: opacity 0.2s ease;
 }
 
-/* Bar Chart */
-.bar { opacity: 0.9; }
-.bar:hover { opacity: 1; stroke: #333; stroke-width: 1px; }
-#barLegend { margin-bottom: 5px; font-size: 14px; font-weight: bold; }
+#barLegend {
+    margin-bottom: 5px;
+    font-size: 14px;
+    font-weight: bold;
+}
 #barLegend span { margin: 0 10px; }
-
-/* Line Chart */
-.line {
-    fill: none;
-    stroke-width: 2.5px;
-    opacity: 0.8;
-}
-.line:hover {
-    stroke-width: 4px;
-    opacity: 1;
-    cursor: pointer;
-}
-.axis-grid line {
-    stroke: #e0e0e0;
-}
