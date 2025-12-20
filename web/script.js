@@ -324,7 +324,7 @@ function addLifeLadderBands(selection, y, width) {
             .attr("height", y(yMin) - y(Math.min(yMax, 5.0)))
             .attr("fill", categoryColorScale("Low"))
             .attr("opacity", 0.1)
-            .style("pointer-events", "none"); // Make non-interactive
+            .style("pointer-events", "none");
     }
 }
 
